@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Funktionenspiel</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1923;
+    --panel: #1a2635;
+    --panel2: #212f42;
+    --accent: #00d4aa;
+    --accent2: #ff6b6b;
+    --accent3: #ffd166;
+    --accent4: #a78bfa;
+    --text: #e8f0fe;
+    --text-muted: #7a8fa6;
+    --border: #2a3f55;
+    --r1: #00d4aa;
+    --r2: #ff6b6b;
+    --r3: #ffd166;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px;
+  }
+
+  /* ── EINSTIEGSMASKE ─────────────────────────── */
+  #start-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+    gap: 40px;
+    width: 100%;
+    max-width: 700px;
+  }
+  .start-title { text-align: center; }
+  .start-title h1 {
+    font-size: 3rem;
+    font-weight: 900;
+    letter-spacing: -2px;
+    background: linear-gradient(90deg, var(--accent), #00a8ff, var(--accent4));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.1;
+  }
+  .start-title p { color: var(--text-muted); font-size: 1.05rem; margin-top: 10px; }
+
+  .mode-cards {
+    display: flex;
+    gap: 24px;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .mode-card {
+    flex: 1;
+    min-width: 240px;
+    max-width: 300px;
+    background: var(--panel);
+    border: 2px solid var(--border);
+    border-radius: 20px;
+    padding: 32px 24px;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .mode-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.2s;
+    border-radius: 18px;
+  }
+  .mode-card.gerade::before { background: radial-gradient(circle at 50% 0%, rgba(0,212,170,0.12), transparent 70%); }
+  .mode-card.parabel::before { background: radial-gradient(circle at 50% 0%, rgba(167,139,250,0.15), transparent 70%); }
+  .mode-card:hover { transform: translateY(-4px); }
+  .mode-card:hover::before { opacity: 1; }
+  .mode-card.gerade:hover { border-color: var(--accent); box-shadow: 0 8px 32px rgba(0,212,170,0.2); }
+  .mode-card.parabel:hover { border-color: var(--accent4); box-shadow: 0 8px 32px rgba(167,139,250,0.2); }
+  .mode-icon { font-size: 3rem; margin-bottom: 16px; display: block; }
+  .mode-card h2 { font-size: 1.4rem; font-weight: 900; margin-bottom: 8px; }
+  .mode-card.gerade h2 { color: var(--accent); }
+  .mode-card.parabel h2 { color: var(--accent4); }
+  .mode-card p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; }
+  .mode-formula {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85rem;
+    margin-top: 14px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    display: inline-block;
+  }
+  .mode-card.gerade .mode-formula { background: rgba(0,212,170,0.12); color: var(--accent); }
+  .mode-card.parabel .mode-formula { background: rgba(167,139,250,0.12); color: var(--accent4); }
+
+  /* ── SPIELBEREICH ───────────────────────────── */
+  #game-screen { display: none; width: 100%; max-width: 1040px; }
+
+  header {
+    text-align: center;
+    margin-bottom: 20px;
+    position: relative;
+  }
+  header h1 { font-size: 2rem; font-weight: 900; letter-spacing: -1px; }
+  header h1.gerade-title {
+    background: linear-gradient(90deg, var(--accent), #00a8ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  header h1.parabel-title {
+    background: linear-gradient(90deg, var(--accent4), #ff6b9d);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  header p { color: var(--text-muted); font-size: 0.9rem; margin-top: 4px; }
+
+  .back-btn {
+    position: absolute;
+    left: 0; top: 50%;
+    transform: translateY(-50%);
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .back-btn:hover { color: var(--text); border-color: var(--accent); }
+
+  .app { display: flex; gap: 20px; width: 100%; align-items: flex-start; }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    flex-shrink: 0;
+    width: 265px;
+  }
+  .panel h2 {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+  }
+
+  label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; }
+  input[type="text"] {
+    width: 100%;
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 1rem;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus { border-color: var(--accent); }
+
+  .formula-preview {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.82rem;
+    padding: 8px 10px;
+    background: var(--panel2);
+    border-radius: 8px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    min-height: 34px;
+    border: 1px solid var(--border);
+    word-break: break-all;
+  }
+  .formula-preview.active { color: var(--text); }
+
+  .btn {
+    display: block; width: 100%; padding: 10px;
+    border: none; border-radius: 10px;
+    font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.95rem;
+    cursor: pointer; transition: transform 0.1s, opacity 0.2s; margin-bottom: 8px;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .btn-primary-g { background: linear-gradient(135deg, var(--accent), #00a8ff); color: #0f1923; }
+  .btn-primary-p { background: linear-gradient(135deg, var(--accent4), #ff6b9d); color: #0f1923; }
+  .btn-secondary { background: var(--panel2); color: var(--text); border: 1px solid var(--border); }
+
+  .rounds { display: flex; gap: 8px; margin-bottom: 14px; }
+  .round-dot { flex: 1; height: 6px; border-radius: 3px; background: var(--border); transition: background 0.3s; }
+  .round-dot.active-g { background: var(--accent); }
+  .round-dot.active-p { background: var(--accent4); }
+  .round-dot.done { background: var(--accent3); }
+
+  #status-msg { font-size: 0.82rem; color: var(--accent); min-height: 18px; margin-bottom: 10px; font-weight: 600; line-height: 1.3; }
+
+  .result-box {
+    background: var(--panel2); border-radius: 10px; padding: 10px 12px;
+    margin-bottom: 10px; font-size: 0.85rem; border-left: 3px solid var(--border);
+  }
+  .result-box.r1 { border-color: var(--r1); }
+  .result-box.r2 { border-color: var(--r2); }
+  .result-box.r3 { border-color: var(--r3); }
+  .result-box .round-label { font-weight: 700; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px; }
+  .result-box .points { font-family: 'Space Mono', monospace; font-size: 1.2rem; font-weight: 700; color: var(--accent3); }
+  .result-box .detail { color: var(--text-muted); font-size: 0.78rem; margin-top: 2px; }
+  .result-box .formula-line { font-family: 'Space Mono', monospace; font-size: 0.78rem; color: #c0d0e0; margin: 3px 0; word-break: break-all; }
+
+  .total-score {
+    background: linear-gradient(135deg, #1a3a2a, #1a2a3a);
+    border: 1px solid var(--accent); border-radius: 12px; padding: 14px; text-align: center; margin-top: 8px;
+  }
+  .total-score .label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); }
+  .total-score .score { font-family: 'Space Mono', monospace; font-size: 2.4rem; font-weight: 700; color: var(--accent); line-height: 1.2; }
+
+  .canvas-wrap {
+    flex: 1; background: var(--panel); border: 1px solid var(--border);
+    border-radius: 16px; padding: 14px; display: flex; flex-direction: column; align-items: center;
+  }
+  canvas { border-radius: 8px; display: block; }
+
+  .legend { display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap; justify-content: center; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: var(--text-muted); font-family: 'Space Mono', monospace; }
+  .legend-line { width: 22px; height: 3px; border-radius: 2px; }
+
+  footer { margin-top: 28px; color: var(--text-muted); font-size: 0.8rem; text-align: center; }
+
+  @keyframes pop {
+    0% { transform: scale(0.8); opacity: 0; }
+    60% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .pop { animation: pop 0.3s ease forwards; }
+
+  @keyframes glow {
+    0%,100% { text-shadow: 0 0 10px var(--accent); }
+    50% { text-shadow: 0 0 30px var(--accent), 0 0 60px var(--accent); }
+  }
+  .glow { animation: glow 1.5s ease-in-out infinite; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .fade-in { animation: fadeIn 0.4s ease forwards; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ EINSTIEGSMASKE ═══ -->
+<div id="start-screen" class="fade-in">
+  <div class="start-title">
+    <h1>Funktionenspiel</h1>
+    <p>Zeichne Funktionen und treffe so viele Punkte wie möglich!</p>
+  </div>
+
+  <div class="mode-cards">
+    <div class="mode-card gerade" onclick="startGame('gerade')">
+      <span class="mode-icon">📏</span>
+      <h2>Geradenspiel</h2>
+      <p>Zeichne lineare Funktionen durch zufällig verteilte Punkte im Koordinatensystem.</p>
+      <div class="mode-formula">f(x) = mx + b</div>
+    </div>
+
+    <div class="mode-card parabel" onclick="startGame('parabel')">
+      <span class="mode-icon">⌒</span>
+      <h2>Parabelspiel</h2>
+      <p>Zeichne Parabeln in Scheitelpunktform durch zufällig verteilte Punkte.</p>
+      <div class="mode-formula">f(x) = a(x − Xs)² + Ys</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ SPIELBEREICH ═══ -->
+<div id="game-screen">
+  <header>
+    <button class="back-btn" onclick="goBack()">← Zurück</button>
+    <h1 id="game-title"></h1>
+    <p id="game-subtitle"></p>
+  </header>
+
+  <div class="app">
+    <div class="panel">
+      <h2>Spielsteuerung</h2>
+
+      <div class="rounds">
+        <div class="round-dot" id="dot0"></div>
+        <div class="round-dot" id="dot1"></div>
+        <div class="round-dot" id="dot2"></div>
+      </div>
+
+      <div id="status-msg">Starte ein neues Spiel!</div>
+
+      <!-- Eingaben Gerade -->
+      <div id="inputs-gerade">
+        <label for="inp-m">Steigung m</label>
+        <input type="text" id="inp-m" placeholder="z.B. 0.5 oder 1/2" disabled>
+        <label for="inp-b">y-Achsenabschnitt b</label>
+        <input type="text" id="inp-b" placeholder="z.B. −3" disabled>
+      </div>
+
+      <!-- Eingaben Parabel -->
+      <div id="inputs-parabel" style="display:none">
+        <label for="inp-a">Streckfaktor a</label>
+        <input type="text" id="inp-a" placeholder="z.B. 2 oder −0.5" disabled>
+        <label for="inp-xs">Scheitelpunkt Xs</label>
+        <input type="text" id="inp-xs" placeholder="z.B. 3 oder −1" disabled>
+        <label for="inp-ys">Scheitelpunkt Ys</label>
+        <input type="text" id="inp-ys" placeholder="z.B. −2" disabled>
+      </div>
+
+      <!-- Live-Formelvorschau -->
+      <div class="formula-preview" id="formula-preview">–</div>
+
+      <button class="btn" id="btn-draw" onclick="submitCurve()" disabled>Zeichnen</button>
+      <button class="btn btn-secondary" onclick="newGame()">Neues Spiel</button>
+
+      <hr style="border-color:var(--border);margin:14px 0">
+
+      <h2>Ergebnisse</h2>
+      <div id="results-area"></div>
+      <div id="total-area"></div>
+    </div>
+
+    <div class="canvas-wrap">
+      <canvas id="ks" width="580" height="580"></canvas>
+      <div class="legend" id="legend"></div>
+    </div>
+  </div>
+</div>
+
+<footer>© 2025 Jutta Aeckersberg &nbsp;|&nbsp; Funktionenspiel für den Matheunterricht</footer>
+
+<script>
+// ══════════════════════════════════════════════
+//  KONSTANTEN & ZUSTAND
+// ══════════════════════════════════════════════
+const canvas = document.getElementById('ks');
+const ctx    = canvas.getContext('2d');
+
+const N_PUNKTE = 15;
+const RANGE    = 10;
+const TOL      = 0.2;
+const FARBEN   = ['#00d4aa', '#ff6b6b', '#ffd166'];
+
+let modus        = 'gerade';
+let punkte       = [];
+let kurven       = [];
+let runde        = 0;
+let gesamtpunkte = 0;
+
+// ══════════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════════
+function startGame(m) {
+  modus = m;
+  document.getElementById('start-screen').style.display = 'none';
+  document.getElementById('game-screen').style.display  = 'block';
+
+  const titleEl = document.getElementById('game-title');
+  const subEl   = document.getElementById('game-subtitle');
+  const btnDraw = document.getElementById('btn-draw');
+
+  if (modus === 'gerade') {
+    titleEl.textContent = 'Geradenspiel';
+    titleEl.className   = 'gerade-title';
+    subEl.textContent   = 'Zeichne Geraden und treffe so viele Punkte wie möglich!';
+    btnDraw.className   = 'btn btn-primary-g';
+    document.getElementById('inputs-gerade').style.display  = 'block';
+    document.getElementById('inputs-parabel').style.display = 'none';
+  } else {
+    titleEl.textContent = 'Parabelspiel';
+    titleEl.className   = 'parabel-title';
+    subEl.textContent   = 'Zeichne Parabeln in Scheitelpunktform und treffe so viele Punkte wie möglich!';
+    btnDraw.className   = 'btn btn-primary-p';
+    document.getElementById('inputs-gerade').style.display  = 'none';
+    document.getElementById('inputs-parabel').style.display = 'block';
+  }
+
+  resetState();
+  drawKS();
+  drawHint();
+}
+
+function goBack() {
+  document.getElementById('game-screen').style.display  = 'none';
+  document.getElementById('start-screen').style.display = 'flex';
+}
+
+// ══════════════════════════════════════════════
+//  SPIELLOGIK
+// ══════════════════════════════════════════════
+function resetState() {
+  punkte = []; kurven = []; runde = 0; gesamtpunkte = 0;
+  clearInputs(); setDisabled(true);
+  document.getElementById('results-area').innerHTML = '';
+  document.getElementById('total-area').innerHTML   = '';
+  document.getElementById('legend').innerHTML       = '';
+  setPreview('–', false);
+  updateDots();
+  setStatus('Starte ein neues Spiel!');
+}
+
+function newGame() {
+  punkte = [];
+  const used = new Set();
+  while (punkte.length < N_PUNKTE) {
+    const x = Math.floor(Math.random() * (2*RANGE+1)) - RANGE;
+    const y = Math.floor(Math.random() * (2*RANGE+1)) - RANGE;
+    const k = `${x},${y}`;
+    if (!used.has(k)) { used.add(k); punkte.push([x,y]); }
+  }
+  kurven = []; runde = 1; gesamtpunkte = 0;
+  clearInputs(); setDisabled(false);
+  document.getElementById('results-area').innerHTML = '';
+  document.getElementById('total-area').innerHTML   = '';
+  document.getElementById('legend').innerHTML       = '';
+  setPreview('–', false);
+  updateDots();
+  setStatus('Runde 1 von 3 – Gib die Parameter ein!');
+  redraw();
+  focusFirst();
+}
+
+function parseVal(s) {
+  if (!s) return null;
+  try {
+    s = s.trim().replace(',','.');
+    if (/^-?\d+\/\d+$/.test(s)) {
+      const [a,b] = s.split('/');
+      return parseInt(a)/parseInt(b);
+    }
+    const v = parseFloat(s);
+    return isNaN(v) ? null : v;
+  } catch { return null; }
+}
+
+function submitCurve() {
+  if (runde < 1 || runde > 3) return;
+
+  let params, treffer;
+
+  if (modus === 'gerade') {
+    const m = parseVal(document.getElementById('inp-m').value);
+    const b = parseVal(document.getElementById('inp-b').value);
+    if (m === null || b === null) { setStatus('⚠️ Bitte gültige Zahlen für m und b eingeben!'); return; }
+    params  = {m, b};
+    treffer = punkte.filter(([x,y]) => Math.abs(y - (m*x+b)) <= TOL).length;
+  } else {
+    const a  = parseVal(document.getElementById('inp-a').value);
+    const xs = parseVal(document.getElementById('inp-xs').value);
+    const ys = parseVal(document.getElementById('inp-ys').value);
+    if (a === null || xs === null || ys === null) { setStatus('⚠️ Bitte gültige Zahlen für a, Xs und Ys eingeben!'); return; }
+    if (a === 0) { setStatus('⚠️ a darf nicht 0 sein!'); return; }
+    params  = {a, xs, ys};
+    treffer = punkte.filter(([x,y]) => Math.abs(y - (a*(x-xs)**2+ys)) <= TOL).length;
+  }
+
+  const gewonnen = treffer === 0 ? 0 : treffer === 1 ? 1 : treffer + 1;
+  gesamtpunkte += gewonnen;
+  kurven.push({params, treffer, gewonnen});
+
+  redraw();
+  addResultBox(runde, params, treffer, gewonnen);
+  updateDots();
+
+  if (runde >= 3) {
+    setDisabled(true);
+    showTotal();
+    setStatus('🎉 Spiel beendet! Starte ein neues Spiel.');
+    runde = 4;
+  } else {
+    runde++;
+    clearInputs();
+    setStatus(`Runde ${runde} von 3 – Zeichne deine nächste Funktion!`);
+    focusFirst();
+  }
+}
+
+// ══════════════════════════════════════════════
+//  CANVAS – KOORDINATENSYSTEM
+// ══════════════════════════════════════════════
+function toCanvas(x, y) {
+  const pad = 40, inner = canvas.width - 2*pad;
+  return [
+    pad + ((x+RANGE)/(2*RANGE))*inner,
+    pad + ((RANGE-y)/(2*RANGE))*inner
+  ];
+}
+
+function drawKS() {
+  const sz = canvas.width;
+  ctx.clearRect(0,0,sz,sz);
+  ctx.fillStyle = '#0d1821';
+  ctx.fillRect(0,0,sz,sz);
+
+  // Gitter
+  ctx.strokeStyle = '#2a4060'; ctx.lineWidth = 1;
+  for (let i = -RANGE; i <= RANGE; i++) {
+    let [x1,y1]=toCanvas(i,-RANGE),[x2,y2]=toCanvas(i,RANGE);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    let [x3,y3]=toCanvas(-RANGE,i),[x4,y4]=toCanvas(RANGE,i);
+    ctx.beginPath(); ctx.moveTo(x3,y3); ctx.lineTo(x4,y4); ctx.stroke();
+  }
+
+  // Achsen
+  ctx.strokeStyle = '#7ab0d8'; ctx.lineWidth = 2.5;
+  const [ax1,ay1]=toCanvas(-RANGE,0),[ax2,ay2]=toCanvas(RANGE,0);
+  ctx.beginPath(); ctx.moveTo(ax1,ay1); ctx.lineTo(ax2,ay2); ctx.stroke();
+  const [bx1,by1]=toCanvas(0,-RANGE),[bx2,by2]=toCanvas(0,RANGE);
+  ctx.beginPath(); ctx.moveTo(bx1,by1); ctx.lineTo(bx2,by2); ctx.stroke();
+
+  // Pfeile
+  ctx.fillStyle = '#7ab0d8';
+  ctx.beginPath(); ctx.moveTo(ax2+8,ay2); ctx.lineTo(ax2-6,ay2-5); ctx.lineTo(ax2-6,ay2+5); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(bx1,by1-8); ctx.lineTo(bx1-5,by1+6); ctx.lineTo(bx1+5,by1+6); ctx.fill();
+
+  // Zahlenbeschriftung
+  ctx.fillStyle = '#8bbfd8'; ctx.font = '700 12px Space Mono, monospace';
+  ctx.textAlign = 'center';
+  for (let i=-RANGE; i<=RANGE; i++) {
+    if (i===0) continue;
+    const [cx]=toCanvas(i,0),[,cy]=toCanvas(0,0);
+    ctx.fillText(i, cx, cy+17);
+  }
+  ctx.textAlign = 'right';
+  for (let i=-RANGE; i<=RANGE; i++) {
+    if (i===0) continue;
+    const [cx]=toCanvas(0,0),[,cy]=toCanvas(0,i);
+    ctx.fillText(i, cx-5, cy+4);
+  }
+
+  // Achsenlabels
+  ctx.fillStyle = '#a0c8e8'; ctx.font = 'bold 14px Nunito, sans-serif';
+  ctx.textAlign = 'left';   ctx.fillText('x', ax2+14, ay2+5);
+  ctx.textAlign = 'center'; ctx.fillText('y', bx1, by1-14);
+
+  // Ursprung
+  ctx.fillStyle = '#8bbfd8'; ctx.font = '700 12px Space Mono, monospace';
+  ctx.textAlign = 'right';
+  const [ox,oy]=toCanvas(0,0);
+  ctx.fillText('0', ox-5, oy+17);
+}
+
+function drawPunkte() {
+  punkte.forEach(([x,y]) => {
+    const [cx,cy] = toCanvas(x,y);
+    const g = ctx.createRadialGradient(cx,cy,0,cx,cy,13);
+    g.addColorStop(0,'rgba(255,255,255,0.45)');
+    g.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(cx,cy,13,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(cx,cy,7,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#c0d8f0';
+    ctx.beginPath(); ctx.arc(cx,cy,4,0,Math.PI*2); ctx.fill();
+  });
+}
+
+function drawKurven() {
+  kurven.forEach((k,i) => {
+    const farbe = FARBEN[i];
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(40,40,canvas.width-80,canvas.height-80);
+    ctx.clip();
+    ctx.strokeStyle = farbe; ctx.lineWidth = 3; ctx.globalAlpha = 1;
+
+    if (modus === 'gerade') {
+      const {m,b} = k.params;
+      const [x1,y1]=toCanvas(-RANGE, m*(-RANGE)+b);
+      const [x2,y2]=toCanvas( RANGE, m*RANGE+b);
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    } else {
+      const {a,xs,ys} = k.params;
+      const steps = 500;
+      ctx.beginPath();
+      for (let s=0; s<=steps; s++) {
+        const x = -RANGE + (2*RANGE*s/steps);
+        const y = a*(x-xs)**2 + ys;
+        const [cx,cy] = toCanvas(x,y);
+        s===0 ? ctx.moveTo(cx,cy) : ctx.lineTo(cx,cy);
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
+  });
+}
+
+function highlightTreffer() {
+  kurven.forEach((k,ki) => {
+    const farbe = FARBEN[ki];
+    punkte.forEach(([x,y]) => {
+      let hit = false;
+      if (modus === 'gerade') {
+        const {m,b} = k.params;
+        hit = Math.abs(y-(m*x+b)) <= TOL;
+      } else {
+        const {a,xs,ys} = k.params;
+        hit = Math.abs(y-(a*(x-xs)**2+ys)) <= TOL;
+      }
+      if (hit) {
+        const [cx,cy] = toCanvas(x,y);
+        ctx.strokeStyle = farbe; ctx.lineWidth = 3.5;
+        ctx.beginPath(); ctx.arc(cx,cy,11,0,Math.PI*2); ctx.stroke();
+        ctx.fillStyle = farbe;
+        ctx.beginPath(); ctx.arc(cx,cy,6,0,Math.PI*2); ctx.fill();
+      }
+    });
+  });
+}
+
+function redraw() {
+  drawKS();
+  drawKurven();
+  drawPunkte();
+  highlightTreffer();
+  updateLegend();
+}
+
+function drawHint() {
+  ctx.fillStyle = '#4a6a85';
+  ctx.font = '700 16px Nunito, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Starte ein neues Spiel →', canvas.width/2, canvas.height/2);
+}
+
+// ══════════════════════════════════════════════
+//  UI-HELFER
+// ══════════════════════════════════════════════
+function fmt(v) {
+  if (v === null || v === undefined) return '?';
+  const s = parseFloat(v.toFixed(4));
+  return Number.isInteger(s) ? String(s) : String(s);
+}
+
+function buildFormula(params) {
+  if (modus === 'gerade') {
+    const {m,b} = params;
+    const bAbs = fmt(Math.abs(b));
+    return `f(x) = ${fmt(m)}x ${b>=0?'+':'−'} ${bAbs}`;
+  } else {
+    const {a,xs,ys} = params;
+    const xPart = xs===0 ? 'x' : `(x ${xs>0?'−':'+'}  ${fmt(Math.abs(xs))})`;
+    const ysAbs = fmt(Math.abs(ys));
+    return `f(x) = ${fmt(a)}·${xPart}² ${ys>=0?'+':'−'} ${ysAbs}`;
+  }
+}
+
+function updateFormulaPreview() {
+  let params = null;
+  if (modus === 'gerade') {
+    const m = parseVal(document.getElementById('inp-m').value);
+    const b = parseVal(document.getElementById('inp-b').value);
+    if (m !== null && b !== null) params = {m,b};
+  } else {
+    const a  = parseVal(document.getElementById('inp-a').value);
+    const xs = parseVal(document.getElementById('inp-xs').value);
+    const ys = parseVal(document.getElementById('inp-ys').value);
+    if (a !== null && xs !== null && ys !== null) params = {a,xs,ys};
+  }
+  if (params) setPreview(buildFormula(params), true);
+  else        setPreview('–', false);
+}
+
+['inp-m','inp-b','inp-a','inp-xs','inp-ys'].forEach(id => {
+  document.getElementById(id).addEventListener('input', updateFormulaPreview);
+});
+
+function setPreview(txt, active) {
+  const el = document.getElementById('formula-preview');
+  el.textContent = txt;
+  active ? el.classList.add('active') : el.classList.remove('active');
+}
+
+function clearInputs() {
+  ['inp-m','inp-b','inp-a','inp-xs','inp-ys'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  setPreview('–', false);
+}
+
+function setDisabled(v) {
+  ['inp-m','inp-b','inp-a','inp-xs','inp-ys'].forEach(id => {
+    document.getElementById(id).disabled = v;
+  });
+  document.getElementById('btn-draw').disabled = v;
+}
+
+function focusFirst() {
+  document.getElementById(modus==='gerade'?'inp-m':'inp-a').focus();
+}
+
+function setStatus(msg) { document.getElementById('status-msg').textContent = msg; }
+
+function updateDots() {
+  const cls = modus==='gerade' ? 'active-g' : 'active-p';
+  for (let i=0; i<3; i++) {
+    const d = document.getElementById(`dot${i}`);
+    d.className = 'round-dot';
+    if (i < kurven.length)                                d.classList.add('done');
+    else if (i===kurven.length && runde>=1 && runde<=3)   d.classList.add(cls);
+  }
+}
+
+function addResultBox(r, params, treffer, pkte) {
+  const area = document.getElementById('results-area');
+  const div  = document.createElement('div');
+  div.className = `result-box r${r} pop`;
+  div.innerHTML = `
+    <div class="round-label" style="color:${FARBEN[r-1]}">Runde ${r}</div>
+    <div class="formula-line">${buildFormula(params)}</div>
+    <div class="detail">${treffer} Punkt${treffer!==1?'e':''} getroffen</div>
+    <div class="points">${pkte>0?'+':''}${pkte} Pkt</div>
+  `;
+  area.appendChild(div);
+}
+
+function showTotal() {
+  document.getElementById('total-area').innerHTML = `
+    <div class="total-score pop">
+      <div class="label">Gesamtpunktzahl</div>
+      <div class="score glow">${gesamtpunkte}</div>
+      <div style="color:var(--text-muted);font-size:0.78rem;margin-top:4px;">Drücke „Neues Spiel" für eine neue Runde</div>
+    </div>
+  `;
+}
+
+function updateLegend() {
+  const legend = document.getElementById('legend');
+  legend.innerHTML = '';
+  kurven.forEach((k,i) => {
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.innerHTML = `
+      <div class="legend-line" style="background:${FARBEN[i]}"></div>
+      <span style="color:${FARBEN[i]}">R${i+1}:</span>
+      <span>${buildFormula(k.params)}</span>
+    `;
+    legend.appendChild(item);
+  });
+}
+
+// Enter-Taste
+document.addEventListener('keydown', e => {
+  if (e.key==='Enter' && !document.getElementById('btn-draw').disabled) submitCurve();
+});
+
+// Init
+drawKS();
+drawHint();
+</script>
+</body>
+</html>
