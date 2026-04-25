@@ -364,14 +364,14 @@ function startGame(m) {
   if (modus === 'gerade') {
     titleEl.textContent = 'Geradenspiel';
     titleEl.className   = 'gerade-title';
-    subEl.textContent   = 'Zeichne Geraden und treffe so viele Punkte wie möglich!';
+    subEl.textContent   = 'Zeichne Geraden und triff so viele Punkte wie möglich!';
     btnDraw.className   = 'btn btn-primary-g';
     document.getElementById('inputs-gerade').style.display  = 'block';
     document.getElementById('inputs-parabel').style.display = 'none';
   } else {
     titleEl.textContent = 'Parabelspiel';
     titleEl.className   = 'parabel-title';
-    subEl.textContent   = 'Zeichne Parabeln in Scheitelpunktform und treffe so viele Punkte wie möglich!';
+    subEl.textContent   = 'Zeichne Parabeln in Scheitelpunktform und triff so viele Punkte wie möglich!';
     btnDraw.className   = 'btn btn-primary-p';
     document.getElementById('inputs-gerade').style.display  = 'none';
     document.getElementById('inputs-parabel').style.display = 'block';
